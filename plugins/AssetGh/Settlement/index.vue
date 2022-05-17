@@ -80,6 +80,7 @@ const {
     showAddForm,
     showEditForm,
     onRequest,
+    getTableData,
     handleSearch,
     resetSearch,
     handleFinish,
@@ -91,10 +92,7 @@ onMounted(() => {
     queryParams.value.setYearMonth = date.formatDate(timeStamp, 'YYYYMM')
     nowYearMonth.value = date.formatDate(timeStamp, 'YYYYMM')
     titleYearMonth.value = nowYearMonth.value
-    onRequest({
-        pagination: pagination.value,
-        queryParams: queryParams.value
-    })
+    getTableData()
 })
 const nowYearMonth = ref('')
 const titleYearMonth = ref('')
@@ -105,10 +103,7 @@ const resetSettlement = () => {
                 type: 'positive',
                 message: res.message,
             })
-            onRequest({
-                pagination: pagination.value,
-                queryParams: queryParams.value
-            })
+            getTableData()
         }
     })
 }
@@ -116,17 +111,11 @@ const resetYearMonth = () => {
     const timeStamp = Date.now()
     queryParams.value.setYearMonth = date.formatDate(timeStamp, 'YYYYMM')
     titleYearMonth.value = nowYearMonth.value
-    onRequest({
-        pagination: pagination.value,
-        queryParams: queryParams.value
-    })
+    getTableData()
 }
 const getTableDataTitle = () => {
     titleYearMonth.value = queryParams.value.setYearMonth
-    onRequest({
-        pagination: pagination.value,
-        queryParams: queryParams.value
-    })
+    getTableData()
 }
 const exportTable = () => {
     // naive encoding to csv format
