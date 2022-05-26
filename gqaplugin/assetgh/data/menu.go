@@ -34,13 +34,13 @@ func (s *sysMenu) LoadData() error {
 var sysMenuData = []gqaModel.SysMenu{
 	{GqaModelWithCreatedByAndUpdatedBy: gqaModel.GqaModelWithCreatedByAndUpdatedBy{GqaModel: gqaGlobal.GqaModel{
 		Sort: 1101, Stable: "yes", CreatedBy: "admin", CreatedAt: time.Now(), Memo: "这是工会固定资产管理插件",
-	}}, Name: "GqaPluginAssetGh", Title: "工会固定资产管理", Icon: "assignment", Path: "", Component: ""},
+	}}, IsPlugin: "yes", Name: "GqaPluginAssetGh", Title: "工会固定资产管理", Icon: "assignment", Path: "", Component: ""},
 	{GqaModelWithCreatedByAndUpdatedBy: gqaModel.GqaModelWithCreatedByAndUpdatedBy{GqaModel: gqaGlobal.GqaModel{
 		Sort: 1, Stable: "yes", CreatedBy: "admin", CreatedAt: time.Now(), Memo: "这是固定资产管理",
-	}}, Name: "plugin-AssetGh-asset", Title: "固定资产管理", Icon: "assignment",
+	}}, IsPlugin: "yes", Name: "plugin-AssetGh-asset", Title: "固定资产管理", Icon: "assignment",
 		Path: "/plugin-AssetGh/AssetGh/asset", Component: "plugins/AssetGh/Asset/index", ParentCode: "GqaPluginAssetGh"},
 	{GqaModelWithCreatedByAndUpdatedBy: gqaModel.GqaModelWithCreatedByAndUpdatedBy{GqaModel: gqaGlobal.GqaModel{
 		Sort: 2, Stable: "yes", CreatedBy: "admin", CreatedAt: time.Now(), Memo: "这是固定资产月结",
-	}}, Name: "plugin-AssetGh-settlement", Title: "固定资产月结", Icon: "assignment",
+	}}, IsPlugin: "yes", Name: "plugin-AssetGh-settlement", Title: "固定资产月结", Icon: "assignment",
 		Path: "/plugin-AssetGh/AssetGh/Settlement", Component: "plugins/AssetGh/Settlement/index", ParentCode: "GqaPluginAssetGh"},
 }
