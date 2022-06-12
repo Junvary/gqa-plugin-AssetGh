@@ -6,6 +6,7 @@ import (
 	gqaModel "github.com/Junvary/gin-quasar-admin/GQA-BACKEND/model"
 	gqaServicePrivate "github.com/Junvary/gin-quasar-admin/GQA-BACKEND/service/private"
 	gqaUtils "github.com/Junvary/gin-quasar-admin/GQA-BACKEND/utils"
+	"github.com/shopspring/decimal"
 	"gorm.io/gorm"
 	"time"
 )
@@ -61,24 +62,27 @@ func EditAsset(toEditAsset model.GqaPluginAssetGh, username string) (err error) 
 	var usefulLife = toEditAsset.UsefulLife
 	var number = toEditAsset.Number
 	//计算月计提折旧
-	toEditAsset.Depreciation = originalValue * float64(number) / float64(usefulLife*12)
+	toEditAsset.DepreciationMonth, _ = decimal.NewFromFloat(originalValue * float64(number) / float64(usefulLife*12)).Round(2).Float64()
+	toEditAsset.DepreciationMonthLast, _ = decimal.NewFromFloat(originalValue*float64(number) - toEditAsset.DepreciationMonth*float64(usefulLife*12-1)).Round(2).Float64()
 	//err = gqaGlobal.GqaDb.Updates(&toEditAsset).Error
 	err = db.Updates(gqaUtils.MergeMap(gqaUtils.GlobalModelToMap(&toEditAsset.GqaModel), map[string]interface{}{
-		"asset_code":       toEditAsset.AssetCode,
-		"asset_name":       toEditAsset.AssetName,
-		"asset_catalog1":   toEditAsset.AssetCatalog1,
-		"asset_catalog2":   toEditAsset.AssetCatalog2,
-		"asset_catalog3":   toEditAsset.AssetCatalog3,
-		"asset_catalog4":   toEditAsset.AssetCatalog4,
-		"entry_date":       toEditAsset.EntryDate,
-		"number":           toEditAsset.Number,
-		"original_value":   toEditAsset.OriginalValue,
-		"depreciation":     toEditAsset.Depreciation,
-		"useful_life":      toEditAsset.UsefulLife,
-		"user_dept":        toEditAsset.UserDept,
-		"storage_location": toEditAsset.StorageLocation,
-		"custodian":        toEditAsset.Custodian,
-		"use_status":       toEditAsset.UseStatus,
+		"asset_code":              toEditAsset.AssetCode,
+		"asset_name":              toEditAsset.AssetName,
+		"asset_catalog1":          toEditAsset.AssetCatalog1,
+		"asset_catalog2":          toEditAsset.AssetCatalog2,
+		"asset_catalog3":          toEditAsset.AssetCatalog3,
+		"asset_catalog4":          toEditAsset.AssetCatalog4,
+		"entry_date":              toEditAsset.EntryDate,
+		"scrap_date":              toEditAsset.ScrapDate,
+		"number":                  toEditAsset.Number,
+		"original_value":          toEditAsset.OriginalValue,
+		"depreciation_month":      toEditAsset.DepreciationMonth,
+		"depreciation_month_last": toEditAsset.DepreciationMonthLast,
+		"useful_life":             toEditAsset.UsefulLife,
+		"user_dept":               toEditAsset.UserDept,
+		"storage_location":        toEditAsset.StorageLocation,
+		"custodian":               toEditAsset.Custodian,
+		"use_status":              toEditAsset.UseStatus,
 	})).Error
 	return err
 }
@@ -92,7 +96,8 @@ func AddAsset(toAddAsset model.GqaPluginAssetGh, username string) (err error) {
 	var usefulLife = toAddAsset.UsefulLife
 	var number = toAddAsset.Number
 	//计算月计提折旧
-	toAddAsset.Depreciation = originalValue * float64(number) / float64(usefulLife*12)
+	toAddAsset.DepreciationMonth, _ = decimal.NewFromFloat(originalValue * float64(number) / float64(usefulLife*12)).Round(2).Float64()
+	toAddAsset.DepreciationMonthLast, _ = decimal.NewFromFloat(originalValue*float64(number) - toAddAsset.DepreciationMonth*float64(usefulLife*12-1)).Round(2).Float64()
 	err = db.Create(&toAddAsset).Error
 	return err
 }
@@ -146,9 +151,15 @@ func GetSettlementList(getSettlementList model.RequestAssetSettlementList, usern
 			now := time.Now()
 			entryDate, _ := time.Parse("2006-01-02", v.EntryDate)
 			OriginalValue += v.OriginalValue * float64(v.Number)
-			MonthDepreciation += v.Depreciation
-			TotalDepreciation += v.Depreciation * float64(SubMonth(now, entryDate))
-			NetWorth += v.OriginalValue*float64(v.Number) - v.Depreciation
+			if v.ScrapDate[0:len(v.ScrapDate)-3] == now.Format("2006-01") {
+				MonthDepreciation += v.DepreciationMonthLast
+				TotalDepreciation += v.OriginalValue * float64(v.Number)
+				NetWorth += 0
+			} else {
+				MonthDepreciation += v.DepreciationMonth
+				TotalDepreciation += v.DepreciationMonth * float64(SubMonth(now, entryDate))
+				NetWorth += v.OriginalValue*float64(v.Number) - v.DepreciationMonth
+			}
 		}
 		err, dict := gqaUtils.GetDict("AssetGhCatalog")
 		if err != nil {
@@ -171,10 +182,17 @@ func GetSettlementList(getSettlementList model.RequestAssetSettlementList, usern
 			for _, vv := range v {
 				now := time.Now()
 				entryDate, _ := time.Parse("2006-01-02", vv.EntryDate)
-				ov += vv.OriginalValue * float64(vv.Number)
-				md += vv.Depreciation
-				td += vv.Depreciation * float64(SubMonth(now, entryDate))
-				nw += vv.OriginalValue*float64(vv.Number) - vv.Depreciation
+				if vv.ScrapDate[0:len(vv.ScrapDate)-3] == now.Format("2006-01") {
+					ov += vv.OriginalValue * float64(vv.Number)
+					md += vv.DepreciationMonthLast
+					td += vv.OriginalValue * float64(vv.Number)
+					nw += 0
+				} else {
+					ov += vv.OriginalValue * float64(vv.Number)
+					md += vv.DepreciationMonth
+					td += vv.DepreciationMonth * float64(SubMonth(now, entryDate))
+					nw += vv.OriginalValue*float64(vv.Number) - vv.DepreciationMonth
+				}
 			}
 			assetSettlementList = append(assetSettlementList, model.GqaPluginAssetGhSettlement{
 				SetYearMonth:      getSettlementList.SetYearMonth,
@@ -199,7 +217,6 @@ func GetSettlementList(getSettlementList model.RequestAssetSettlementList, usern
 		}
 		return err, nil
 	}
-
 }
 
 func SetSettlement(username string) (err error) {
@@ -219,9 +236,8 @@ func SetSettlement(username string) (err error) {
 	}
 	var newAssetList []model.GqaPluginAssetGh
 	for _, ass := range assetList {
-		now := time.Now()
-		entryDate, _ := time.Parse("2006-01-02", ass.EntryDate)
-		if float64(SubMonth(now, entryDate))*ass.Depreciation >= ass.OriginalValue*float64(ass.Number) {
+		ScrapDate, _ := time.Parse("2006-01-02", ass.ScrapDate)
+		if ScrapDate.Before(time.Now()) {
 			ass.UseStatus = "assetGh_scrap"
 		}
 		newAssetList = append(newAssetList, ass)

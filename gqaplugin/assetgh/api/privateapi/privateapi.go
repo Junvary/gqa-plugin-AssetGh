@@ -64,6 +64,7 @@ func AddAsset(c *gin.Context) {
 		AssetCatalog3:                     toAddAsset.AssetCatalog3,
 		AssetCatalog4:                     toAddAsset.AssetCatalog4,
 		EntryDate:                         toAddAsset.EntryDate,
+		ScrapDate:                         toAddAsset.ScrapDate,
 		Number:                            toAddAsset.Number,
 		OriginalValue:                     toAddAsset.OriginalValue,
 		UsefulLife:                        toAddAsset.UsefulLife,

@@ -6,21 +6,23 @@ import (
 
 type GqaPluginAssetGh struct {
 	gqaModel.GqaModelWithCreatedByAndUpdatedBy
-	AssetCode       string  `json:"assetCode" gorm:"comment:资产编号;not null;index"`
-	AssetName       string  `json:"assetName" gorm:"comment:资产名称;not null;index;"`
-	AssetCatalog1   string  `json:"assetCatalog1" gorm:"comment:资产类别1;not null;"`
-	AssetCatalog2   string  `json:"assetCatalog2" gorm:"comment:资产类别2;not null;"`
-	AssetCatalog3   string  `json:"assetCatalog3" gorm:"comment:资产类别3;"`
-	AssetCatalog4   string  `json:"assetCatalog4" gorm:"comment:资产类别4;"`
-	EntryDate       string  `json:"entryDate" gorm:"comment:入账日期;not null;"`
-	Number          int     `json:"number" gorm:"comment:数量;not null;"`
-	OriginalValue   float64 `json:"originalValue" gorm:"comment:资产原值;not null;"`
-	Depreciation    float64 `json:"depreciation" gorm:"comment:折旧(元月);not null;"`
-	UsefulLife      int     `json:"usefulLife" gorm:"comment:使用年限;not null;"`
-	UserDept        string  `json:"userDept" gorm:"comment:使用部门;not null;"`
-	StorageLocation string  `json:"storageLocation" gorm:"comment:存放地点;not null;"`
-	Custodian       string  `json:"custodian" gorm:"comment:保管人;not null;"`
-	UseStatus       string  `json:"useStatus" gorm:"comment:使用状态;not null;default:assetGh_on_use;index"`
+	AssetCode             string  `json:"assetCode" gorm:"comment:资产编号;not null;index"`
+	AssetName             string  `json:"assetName" gorm:"comment:资产名称;not null;index;"`
+	AssetCatalog1         string  `json:"assetCatalog1" gorm:"comment:资产类别1;not null;"`
+	AssetCatalog2         string  `json:"assetCatalog2" gorm:"comment:资产类别2;not null;"`
+	AssetCatalog3         string  `json:"assetCatalog3" gorm:"comment:资产类别3;"`
+	AssetCatalog4         string  `json:"assetCatalog4" gorm:"comment:资产类别4;"`
+	EntryDate             string  `json:"entryDate" gorm:"comment:入账日期;not null;"`
+	ScrapDate             string  `json:"scrapDate" gorm:"comment:报废日期;not null;"`
+	Number                int     `json:"number" gorm:"comment:数量;not null;"`
+	OriginalValue         float64 `json:"originalValue" gorm:"comment:资产原值;not null;"`
+	DepreciationMonth     float64 `json:"depreciationMonth" gorm:"comment:折旧(元月);not null;"`
+	DepreciationMonthLast float64 `json:"depreciationMonthLast" gorm:"comment:最后一个月折旧(元月);not null;"`
+	UsefulLife            int     `json:"usefulLife" gorm:"comment:使用年限;not null;"`
+	UserDept              string  `json:"userDept" gorm:"comment:使用部门;not null;"`
+	StorageLocation       string  `json:"storageLocation" gorm:"comment:存放地点;not null;"`
+	Custodian             string  `json:"custodian" gorm:"comment:保管人;not null;"`
+	UseStatus             string  `json:"useStatus" gorm:"comment:使用状态;not null;default:assetGh_on_use;index"`
 }
 
 type RequestAddAsset struct {
@@ -32,6 +34,7 @@ type RequestAddAsset struct {
 	AssetCatalog3   string  `json:"assetCatalog3"`
 	AssetCatalog4   string  `json:"assetCatalog4"`
 	EntryDate       string  `json:"entryDate"`
+	ScrapDate       string  `json:"scrapDate"`
 	Number          int     `json:"number"`
 	OriginalValue   float64 `json:"originalValue"`
 	UsefulLife      int     `json:"usefulLife"`

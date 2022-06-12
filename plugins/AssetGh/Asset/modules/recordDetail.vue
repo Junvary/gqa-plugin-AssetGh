@@ -26,14 +26,19 @@
                         <q-select class="col" v-model="recordDetail.value.assetCatalog2" :options="catalog2" clearable
                             emit-value map-options :rules="[val => val && val.length > 0 || '必须选择资产细类']" label="资产细类"
                             @update:model-value="changeCatalog2" />
+                    </div>
+                    <div class="row">
+                        <q-input class="col" stack-label v-model="recordDetail.value.entryDate" label="入账日期" type="date"
+                            :rules="[val => val && val.length > 0 || '必须输入入账日期']" />
                         <q-input class="col" v-model.number="recordDetail.value.usefulLife" type="number" label="使用年限"
                             :rules="[val => checkUsefulLife(val)]" />
+                        <q-input class="col" stack-label v-model="recordDetail.value.scrapDate" label="报废日期" type="date"
+                            readonly />
                     </div>
                     <div class="row">
                         <q-input class="col" v-model.number="recordDetail.value.originalValue" label="资产原值(元)"
                             type="number" :rules="[val => val && val > 0 || '必须输入资产原值,资产原值必须大于0']" />
-                        <q-input class="col" stack-label v-model="recordDetail.value.entryDate" label="入账日期" type="date"
-                            :rules="[val => val && val.length > 0 || '必须输入入账日期']" />
+
                         <q-input class="col" v-model.number="recordDetail.value.number" label="数量" type="number"
                             :rules="[val => val && val > 0 || '必须输入数量,数量必须大于0']" />
                     </div>
@@ -46,7 +51,7 @@
                             :rules="[val => val && val.length > 0 || '必须输入保管人']" />
                         <q-field dense label="使用状态" stack-label>
                             <template v-slot:control>
-                                <q-option-group v-model="recordDetail.value.useStatus"
+                                <q-option-group v-model="recordDetail.value.useStatus" disable
                                     :options="dictOptions.AssetGhUseStatus" color="primary" inline>
                                 </q-option-group>
                             </template>
@@ -173,6 +178,8 @@ watch(() => recordDetail.value?.usefulLife, (val) => {
         } else {
             recordDetail.value.useStatus = 'assetGh_on_use'
         }
+        const scrapDate = date.addToDate(date.formatDate(new Date(recordDetail.value.entryDate), 'YYYY-MM-DD'), { years: val })
+        recordDetail.value.scrapDate = date.formatDate(scrapDate, 'YYYY-MM-DD')
     }
 })
 watch(() => recordDetail.value?.entryDate, (val) => {
@@ -189,6 +196,8 @@ watch(() => recordDetail.value?.entryDate, (val) => {
         } else {
             recordDetail.value.useStatus = 'assetGh_on_use'
         }
+        const scrapDate = date.addToDate(date.formatDate(new Date(val), 'YYYY-MM-DD'), { years: recordDetail.value.usefulLife })
+        recordDetail.value.scrapDate = date.formatDate(scrapDate, 'YYYY-MM-DD')
     }
 })
 

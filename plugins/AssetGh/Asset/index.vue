@@ -2,13 +2,13 @@
     <q-page padding>
 
         <div class="row q-gutter-md items-center" style="margin-bottom: 10px">
-            <q-input style="width: 22%" v-model="queryParams.assetCode" label="资产编号" />
-            <q-input style="width: 22%" v-model="queryParams.assetName" label="资产名称（模糊）" />
-            <q-select style="width: 22%" v-model="queryParams.assetCatalog1" :options="dictOptions.AssetGhCatalog"
+            <q-input style="width: 15%" v-model="queryParams.assetCode" label="资产编号" />
+            <q-input style="width: 15%" v-model="queryParams.assetName" label="资产名称（模糊）" />
+            <q-select style="width: 15%" v-model="queryParams.assetCatalog1" :options="dictOptions.AssetGhCatalog"
                 clearable emit-value map-options label="资产大类" />
-            <q-select style="width: 22%" v-model="queryParams.assetCatalog2" :options="catalog2" clearable emit-value
+            <q-select style="width: 15%" v-model="queryParams.assetCatalog2" :options="catalog2" clearable emit-value
                 map-options label="资产细类" />
-            <q-select style="width: 22%" v-model="queryParams.useStatus" :options="dictOptions.AssetGhUseStatus"
+            <q-select style="width: 15%" v-model="queryParams.useStatus" :options="dictOptions.AssetGhUseStatus"
                 clearable emit-value map-options label="使用状态" />
             <q-btn color="primary" @click="handleSearch" label="搜索" />
             <q-btn color="primary" @click="resetSearch" label="重置" />
@@ -26,13 +26,13 @@
 
             <template v-slot:body-cell-alreadyUse="props">
                 <q-td :props="props">
-                    {{ diffDateFromEntryDate(props.row.entryDate) }}
+                    {{ diffDateFromEntryDate(props.row) }}
                 </q-td>
             </template>
 
-            <template v-slot:body-cell-depreciation="props">
+            <template v-slot:body-cell-depreciationMonth="props">
                 <q-td :props="props">
-                    {{ props.row.depreciation.toFixed(2) }}
+                    {{ props.row.depreciationMonth.toFixed(2) }}
                 </q-td>
             </template>
 
@@ -86,7 +86,7 @@ const columns = computed(() => {
         { name: 'alreadyUse', align: 'center', label: '已使用(月)', field: 'alreadyUse' },
         { name: 'number', align: 'center', label: '数量', field: 'number' },
         { name: 'originalValue', align: 'center', label: '资产原值(元)', field: 'originalValue' },
-        { name: 'depreciation', align: 'center', label: '计提折旧(元月)', field: 'depreciation' },
+        { name: 'depreciationMonth', align: 'center', label: '计提折旧(元月)', field: 'depreciationMonth' },
         { name: 'alreadyDepreciation', align: 'center', label: '累计折旧(元)', field: 'alreadyDepreciation' },
         { name: 'useStatus', align: 'center', label: '使用状态', field: 'useStatus' },
         { name: 'actions', align: 'center', label: '操作', field: 'actions' },
@@ -114,20 +114,29 @@ const {
 } = useTableData(url)
 
 onMounted(() => {
+    pagination.value.sortBy = 'entry_date'
+    pagination.value.descending = true
     getTableData()
 })
 const catalog2 = computed(() => {
     if (queryParams.value.assetCatalog1) {
-        return dictOptions.value.ghAssetCatalog.find((item) => item.value === queryParams.value.assetCatalog1).children
+        return dictOptions.value.AssetGhCatalog.find((item) => item.value === queryParams.value.assetCatalog1).children
     }
 })
 const diffDateFromEntryDate = computed(() => {
-    return (ed) => {
-        if (ed) {
+    return (row) => {
+        if (row) {
             let now = new Date()
-            let entryDate = new Date(ed)
+            let entryDate = new Date(row.entryDate)
             let diffMonth = date.getDateDiff(now, entryDate, 'month')
-            return diffMonth
+
+            let scrapDate = new Date(row.scrapDate)
+            const diff = date.getDateDiff(now, scrapDate)
+            if (diff > 0) {
+                return '-'
+            } else {
+                return diffMonth
+            }
         }
     }
 })
@@ -135,15 +144,20 @@ const getAlreadyDepreciation = computed(() => {
     return (row) => {
         if (row.entryDate) {
             let now = new Date()
-            let entryDate = new Date(row.entryDate)
-            let diffMonth = date.getDateDiff(now, entryDate, 'month')
-            const depreciation = row.depreciation
-            const alreadyDepreciation = depreciation * diffMonth
-            // 折旧额大于原值*数量后，取原值*数量
-            if (alreadyDepreciation > row.originalValue * row.number) {
-                return (row.originalValue * row.number).toFixed(2)
+            let scrapDate = new Date(row.scrapDate)
+            const diff = date.getDateDiff(now, scrapDate)
+            const nowDate = date.formatDate(now, 'YYYY-MM')
+            if (row.scrapDate.slice(0, 7) === nowDate.slice(0, 7)) {
+                return row.originalValue * row.number
+            } else if (diff > 0) {
+                return row.originalValue * row.number
             } else {
-                return alreadyDepreciation.toFixed(2)
+                let entryDate = new Date(row.entryDate)
+                let diffMonth = date.getDateDiff(now, entryDate, 'month')
+                console.log(diffMonth)
+                const depreciationMonth = row.depreciationMonth
+                const alreadyDepreciation = depreciationMonth * diffMonth
+                return alreadyDepreciation
             }
         }
     }

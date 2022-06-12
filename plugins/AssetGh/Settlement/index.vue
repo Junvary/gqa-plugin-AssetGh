@@ -3,7 +3,7 @@
         <div class="row q-gutter-md items-center justify-between" style="margin-bottom: 10px">
             <q-btn color="primary" @click="resetSettlement" :label="'重新进行' + nowYearMonth + '月结'" />
             <div class="row items-center q-gutter-sm">
-                <q-input v-model="queryParams.setYearMonth" label="选择年月" clearable placeholder="202201" />
+                <q-input v-model="queryParams.setYearMonth" label="选择年月" placeholder="202201" />
                 <q-btn color="primary" @click="getTableDataTitle" label="查询" />
                 <q-btn color="primary" @click="resetYearMonth" label="重置" />
                 <q-btn color="primary" icon="print" v-print="'#printContent'">打印</q-btn>
